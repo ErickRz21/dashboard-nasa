@@ -1,4 +1,7 @@
 ---
+import "../styles/global.css";
+import Navbar from "../components/Navbar.astro";
+
 const API_KEY = import.meta.env.NASA_API_KEY;
 const NASA_URL = `https://api.nasa.gov/planetary/apod?api_key=${API_KEY}`;
 const MARS_URL = `https://api.nasa.gov/insight_weather/?api_key=${API_KEY}&feedtype=json&ver=1.0`;
@@ -12,28 +15,32 @@ const MarsData = await MarsResponse.json();
 const lastSol = MarsData.sol_keys[0];
 const solData = MarsData[lastSol];
 ---
-
-<html lang="en">
-  <a href="/">Return</a>
-
-  <body>
+<Navbar />
+<main class="mx-auto container">
+  <a href="/"
+    ><button class="p-3 my-2 bg-red-200 rounded-full cursor-pointer hover:bg-red-300 duration-300">Return</button></a
+  >
+  <section class="bg-red-100 p-6 my-6 rounded-4xl">
     <h1>Foto del dia</h1>
     <h2>{data.title}</h2>
     <p>{data.date}</p>
 
     {
       data.media_type === "image" ? (
-        <img src={data.url} alt={data.title} width="700" />
+        <img
+          src={data.url}
+          alt={data.title}
+          width="600"
+          class="rounded-2xl mx-auto my-5"
+        />
       ) : (
-        <iframe width="800" height="400" src={data.url} />
+        <iframe width="600" height="400" src={data.url} />
       )
     }
-  </body>
 
-  <p>{data.explanation}</p>
-
+    <p>{data.explanation}</p>
+  </section>
   <h1>Mars Weather</h1>
-
   {
     !solData ? (
       <p>No Mars weather data available (InSight API ended in 2022).</p>
@@ -45,6 +52,4 @@ const solData = MarsData[lastSol];
       </>
     )
   }
-
-
-</html>
+</main>
