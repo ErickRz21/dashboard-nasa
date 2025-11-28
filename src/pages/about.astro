@@ -1,6 +1,5 @@
 ---
 import "../styles/global.css";
-import Navbar from "../components/Navbar.astro";
 
 const API_KEY = import.meta.env.NASA_API_KEY;
 const NASA_URL = `https://api.nasa.gov/planetary/apod?api_key=${API_KEY}`;
@@ -15,16 +14,20 @@ const MarsData = await MarsResponse.json();
 const lastSol = MarsData.sol_keys[0];
 const solData = MarsData[lastSol];
 ---
-<Navbar />
+
 <main class="mx-auto container">
   <a href="/"
-    ><button class="p-3 my-2 bg-red-200 rounded-full cursor-pointer hover:bg-red-300 duration-300">Return</button></a
+    ><button
+      class="p-3 my-2 bg-red-200 rounded-full cursor-pointer hover:bg-red-300 duration-300"
+      >Return</button
+    ></a
   >
   <section class="bg-red-100 p-6 my-6 rounded-4xl">
-    <h1>Foto del dia</h1>
-    <h2>{data.title}</h2>
-    <p>{data.date}</p>
-
+    <div class="text-center font-bold">
+      <h1 class="text-4xl">Picture of the day</h1>
+      <h2 class="text-xl">{data.title}</h2>
+      <span class="text-neutral-400">{data.date}</span>
+    </div>
     {
       data.media_type === "image" ? (
         <img
@@ -38,7 +41,7 @@ const solData = MarsData[lastSol];
       )
     }
 
-    <p>{data.explanation}</p>
+    <p class="font-light">{data.explanation}</p>
   </section>
   <h1>Mars Weather</h1>
   {
@@ -53,3 +56,62 @@ const solData = MarsData[lastSol];
     )
   }
 </main>
+
+<section class="flex justify-center gap-10 my-20">
+  <div class="hover-3d">
+    <!-- content -->
+    <figure class="w-60 rounded-2xl">
+      <img
+        src="https://img.daisyui.com/images/stock/card-1.webp?x"
+        alt="Tailwind CSS 3D card"
+      />
+    </figure>
+    <!-- 8 empty divs needed for the 3D effect -->
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+  <div class="hover-3d">
+    <!-- content -->
+    <figure class="w-60 rounded-2xl">
+      <img
+        src="https://img.daisyui.com/images/stock/card-2.webp?x"
+        alt="Tailwind CSS 3D hover"
+      />
+    </figure>
+    <!-- 8 empty divs needed for the 3D effect -->
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+  <div class="hover-3d">
+    <!-- content -->
+    <figure class="w-60 rounded-2xl">
+      <img
+        src="https://img.daisyui.com/images/stock/card-3.webp?x"
+        alt="Tailwind CSS 3D hover"
+      />
+    </figure>
+    <!-- 8 empty divs needed for the 3D effect -->
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+</section>

@@ -1,0 +1,66 @@
+---
+import { fetchAsteroids } from "../lib/getNearAsteroids.ts";
+import type { NearEarthObject } from "../types/NearEarthObject.ts";
+
+const API_KEY = import.meta.env.NASA_API_KEY;
+
+let asteroids: NearEarthObject[] = [];
+
+try {
+  asteroids = await fetchAsteroids(API_KEY);
+} catch (error) {
+  console.error(error);
+}
+---
+
+<html lang="en">
+  <body class="bg-gray-100 text-gray-900 p-10 ml-64">
+    <h1 class="text-3xl font-bold mb-6">Near Earth Asteroids Today</h1>
+
+    {
+      asteroids.length === 0 ? (
+        <p>No asteroid data available for today.</p>
+      ) : (
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {asteroids.map((ast) => (
+            <div class="bg-white shadow-md rounded-lg p-5 border border-gray-200">
+              <h2 class="text-xl font-semibold mb-2">{ast.name}</h2>
+
+              <p>
+                <span class="font-bold">Magnitude:</span>{" "}
+                {ast.absolute_magnitude_h}
+              </p>
+              <p>
+                <span class="font-bold">Is hazardous?</span>
+                <span
+                  class={
+                    ast.is_potentially_hazardous_asteroid
+                      ? "text-red-600 font-bold"
+                      : "text-green-600"
+                  }
+                >
+                  {ast.is_potentially_hazardous_asteroid ? "Yes" : "No"}
+                </span>
+              </p>
+
+              <p class="mt-3 font-semibold">Closest Approach:</p>
+              <p>
+                Distance: {ast.close_approach_data[0].miss_distance.kilometers}{" "}
+                km
+              </p>
+              <p>
+                Velocity:{" "}
+                {
+                  ast.close_approach_data[0].relative_velocity
+                    .kilometers_per_hour
+                }{" "}
+                km/h
+              </p>
+              <p>Date: {ast.close_approach_data[0].close_approach_date_full}</p>
+            </div>
+          ))}
+        </div>
+      )
+    }
+  </body>
+</html>

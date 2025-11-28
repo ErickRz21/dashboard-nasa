@@ -1,0 +1,178 @@
+---
+import Sidebar from "../components/Sidebar.astro";
+import DashboardCard from "../components/dashboardCard.astro";
+import { fetchAsteroids } from "../lib/getNearAsteroids";
+import type { NearEarthObject } from "../types/NearEarthObject";
+
+const API_KEY = import.meta.env.NASA_API_KEY;
+
+let asteroids: NearEarthObject[] = [];
+
+try {
+  asteroids = await fetchAsteroids(API_KEY);
+} catch (error) {
+  console.error(error);
+}
+
+const hazardousCount = asteroids.filter(
+  (ast) => ast.is_potentially_hazardous_asteroid
+).length;
+
+const approachSummaries = asteroids
+  .map((ast) => {
+    const approach = ast.close_approach_data[0];
+    if (!approach) return null;
+
+    return {
+      name: ast.name,
+      hazardous: ast.is_potentially_hazardous_asteroid,
+      magnitude: ast.absolute_magnitude_h,
+      distanceKm: Number(approach.miss_distance.kilometers),
+      velocityKmH: Number(approach.relative_velocity.kilometers_per_hour),
+      date: approach.close_approach_date_full,
+    };
+  })
+  .filter(Boolean) as Array<{
+  name: string;
+  hazardous: boolean;
+  magnitude: number;
+  distanceKm: number;
+  velocityKmH: number;
+  date: string;
+}>;
+
+const closestApproach = approachSummaries.reduce(
+  (closest, current) =>
+    !closest || current.distanceKm < closest.distanceKm ? current : closest,
+  null as (typeof approachSummaries)[number] | null
+);
+---
+
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>NASA App</title>
+  </head>
+
+  <body class="min-h-screen text-gray-900">
+    <Sidebar />
+
+    <main id="Content" class="ml-64 p-10 space-y-8">
+      <div>
+        <h1 class="text-3xl font-bold">Welcome to your NASA Dashboard</h1>
+        <p class="text-gray-600">
+          Your personalized dashboard for NASA data and insights.
+        </p>
+      </div>
+
+      <form
+        method="get"
+        class="flex items-center gap-4 bg-white p-4 rounded-xl shadow-md border"
+      >
+        <div class="flex flex-col">
+          <label class="text-sm text-gray-600 font-semibold">Select date</label>
+          <input
+            type="date"
+            name="date"
+            value={Astro.url.searchParams.get("date") ||
+              new Date().toISOString().split("T")[0]}
+            class="border px-3 py-2 rounded-md"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="mt-5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+        >
+          Update
+        </button>
+      </form>
+
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <DashboardCard
+          title="Near-Earth Objects today"
+          value={asteroids.length}
+        />
+        <DashboardCard
+          title="Potentially hazardous"
+          value={hazardousCount}
+          color="text-red-600"
+        />
+        <DashboardCard
+          title="Closest approach"
+          value={closestApproach
+            ? `${closestApproach.name} (${closestApproach.distanceKm.toLocaleString()} km)`
+            : "No data"}
+          color="text-amber-600"
+        />
+      </section>
+
+      <section class="bg-white border border-gray-200 rounded-4xl shadow-md">
+        <div
+          class="p-5 border-b border-gray-200 flex items-center justify-between"
+        >
+          <div>
+            <h2 class="text-xl font-semibold">Today's Near-Earth Asteroids</h2>
+            <p class="text-sm text-gray-600">
+              Data provided by NASA&apos;s NeoWs API.
+            </p>
+          </div>
+          <span class="text-xs text-gray-500">
+            {new Date().toLocaleDateString()}
+          </span>
+        </div>
+
+        {
+          approachSummaries.length === 0 ? (
+            <p class="p-5 text-gray-600">
+              No asteroid data available for today.
+            </p>
+          ) : (
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-left text-sm">
+                <thead class="bg-gray-50 text-gray-700">
+                  <tr>
+                    <th class="px-5 py-3 font-semibold">Name</th>
+                    <th class="px-5 py-3 font-semibold">Hazardous</th>
+                    <th class="px-5 py-3 font-semibold">Magnitude</th>
+                    <th class="px-5 py-3 font-semibold">Closest distance</th>
+                    <th class="px-5 py-3 font-semibold">Velocity (km/h)</th>
+                    <th class="px-5 py-3 font-semibold">Date</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  {approachSummaries.map((ast) => (
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-5 py-3 font-medium text-gray-900">
+                        {ast.name}
+                      </td>
+                      <td class="px-5 py-3">
+                        <span
+                          class={
+                            ast.hazardous
+                              ? "text-red-600 font-semibold"
+                              : "text-green-600 font-semibold"
+                          }
+                        >
+                          {ast.hazardous ? "Yes" : "No"}
+                        </span>
+                      </td>
+                      <td class="px-5 py-3 text-gray-700">{ast.magnitude}</td>
+                      <td class="px-5 py-3 text-gray-700">
+                        {ast.distanceKm.toLocaleString()} km
+                      </td>
+                      <td class="px-5 py-3 text-gray-700">
+                        {ast.velocityKmH.toLocaleString()} km/h
+                      </td>
+                      <td class="px-5 py-3 text-gray-700">{ast.date}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        }
+      </section>
+    </main>
+  </body>
+</html>
